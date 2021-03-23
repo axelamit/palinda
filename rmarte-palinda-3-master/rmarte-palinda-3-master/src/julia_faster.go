@@ -12,6 +12,7 @@ import (
 	"math/cmplx"
 	"os"
 	"strconv"
+	"sync"
 	"time"
 )
 
@@ -55,15 +56,24 @@ func Julia(f ComplexFunc, n int) image.Image {
 	bounds := image.Rect(-n/2, -n/2, n/2, n/2)
 	img := image.NewRGBA(bounds)
 	s := float64(n / 4)
+
+	wg := new(sync.WaitGroup)
+	wg.Add(n)
+
 	for i := bounds.Min.X; i < bounds.Max.X; i++ {
-		for j := bounds.Min.Y; j < bounds.Max.Y; j++ {
-			n := Iterate(f, complex(float64(i)/s, float64(j)/s), 256)
-			r := uint8(0)
-			g := uint8(0)
-			b := uint8(n % 32 * 8)
-			img.Set(i, j, color.RGBA{r, g, b, 255})
-		}
+		go func(i int, img *image.RGBA, wg *sync.WaitGroup) {
+			for j := bounds.Min.Y; j < bounds.Max.Y; j++ {
+				n := Iterate(f, complex(float64(i)/s, float64(j)/s), 256)
+				r := uint8(0)
+				g := uint8(0)
+				b := uint8(n % 32 * 8)
+				img.Set(i, j, color.RGBA{r, g, b, 255})
+			}
+			wg.Done()
+		}(i, img, wg)
 	}
+
+	wg.Wait()
 	return img
 }
 

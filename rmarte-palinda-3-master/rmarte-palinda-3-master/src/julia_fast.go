@@ -8,10 +8,10 @@ import (
 	"image"
 	"image/color"
 	"image/png"
-	"log"
 	"math/cmplx"
 	"os"
 	"strconv"
+	"sync"
 	"time"
 )
 
@@ -30,24 +30,26 @@ var Funcs []ComplexFunc = []ComplexFunc{
 
 func main() {
 	start := time.Now()
+
+	const cpus = 8
+	wg := new(sync.WaitGroup)
+	wg.Add(cpus)
 	for n, fn := range Funcs {
-		err := CreatePng("picture-"+strconv.Itoa(n)+".png", fn, 1024)
-		if err != nil {
-			log.Fatal(err)
-		}
+		go CreatePng("picture-"+strconv.Itoa(n)+".png", fn, 1024, wg)
 	}
+	wg.Wait()
 	fmt.Println(time.Since(start))
 }
 
 // CreatePng creates a PNG picture file with a Julia image of size n x n.
-func CreatePng(filename string, f ComplexFunc, n int) (err error) {
+func CreatePng(filename string, f ComplexFunc, n int, wg *sync.WaitGroup) {
 	file, err := os.Create(filename)
 	if err != nil {
 		return
 	}
 	defer file.Close()
-	err = png.Encode(file, Julia(f, n))
-	return
+	png.Encode(file, Julia(f, n))
+	wg.Done()
 }
 
 // Julia returns an image of size n x n of the Julia set for f.
