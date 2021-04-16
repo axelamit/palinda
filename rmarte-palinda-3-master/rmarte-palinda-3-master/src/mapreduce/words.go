@@ -2,17 +2,17 @@ package main
 
 import (
 	"fmt"
-	"time"
-	"strings"
 	"io/ioutil"
+	"strings"
 	"sync"
+	"time"
 )
 
 const DataFile = "loremipsum.txt"
 
 func count(arr []string, maps chan map[string]int, wg *sync.WaitGroup) {
 	freqs := make(map[string]int)
-	for _,s := range arr {
+	for _, s := range arr {
 		w := strings.ReplaceAll(strings.ReplaceAll(s, ",", ""), ".", "")
 		freqs[strings.ToLower(w)]++
 	}
@@ -28,14 +28,14 @@ func WordCount(text string) map[string]int {
 	s := strings.Fields(text)
 
 	parts := 8
-	p_len := len(s)/parts
+	p_len := len(s) / parts
 
 	maps := make(chan map[string]int, parts)
 	wg := new(sync.WaitGroup)
 	wg.Add(parts)
 
 	for i := 0; i < parts; i++ {
-		index := (i+1)*p_len
+		index := (i + 1) * p_len
 		if i == parts-1 {
 			index = len(s)
 		}
@@ -43,9 +43,9 @@ func WordCount(text string) map[string]int {
 	}
 
 	for i := 0; i < parts; i++ {
-		mp := <-maps 
-		for k,v := range mp {
-			freqs[k]+=v
+		mp := <-maps
+		for k, v := range mp {
+			freqs[k] += v
 		}
 	}
 

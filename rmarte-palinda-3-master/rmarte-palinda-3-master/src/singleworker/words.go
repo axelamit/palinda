@@ -2,9 +2,9 @@ package main
 
 import (
 	"fmt"
-	"time"
-	"strings"
 	"io/ioutil"
+	"strings"
+	"time"
 )
 
 const DataFile = "loremipsum.txt"
